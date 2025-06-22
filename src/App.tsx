@@ -1,10 +1,18 @@
 import { OrbitControls, PerspectiveCamera, useGLTF } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import { useControls } from "leva";
+import { useEffect } from "react";
+import { Mesh } from "three";
 import { WebGLDeferredRenderer } from "./WebGLDeferredRenderer";
 
 function Thing() {
   const gl = useThree((state) => state.gl as WebGLDeferredRenderer);
+  const size = useThree((state) => state.size);
+  const dpr = useThree((state) => state.viewport.dpr);
+
+  useEffect(() => {
+    gl.resize(size.width * dpr, size.height * dpr);
+  }, [gl, size, dpr]);
 
   useControls({
     pass: {
@@ -16,28 +24,30 @@ function Thing() {
     },
   });
 
-  const { scene } = useGLTF("/sponza.glb");
+  const { scene } = useGLTF("/demo-2024-deferred-rendering/sponza.glb");
 
-  const n = 10;
-  const spacing = 2.2;
+  useEffect(
+    () => () => {
+      // Recursively dispose
+      scene.traverse((child) => {
+        if (child instanceof Mesh) {
+          child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach((material) => material.dispose());
+            } else {
+              child.material.dispose();
+            }
+          }
+        }
+      });
+    },
+    [scene]
+  );
 
   return (
     <>
       <primitive object={scene} />
-      {/* 
-      {Array.from({ length: n }).map((_, i) => {
-        let x = i * spacing;
-        x -= (n - 1) * spacing * 0.5;
-
-        const roughness = i / n;
-
-        return (
-          <Sphere position={[x, 2, 0]} key={i}>
-            <meshStandardMaterial color="gray" roughness={roughness} />
-          </Sphere>
-        );
-      })} */}
-
       <directionalLight />
     </>
   );
@@ -45,25 +55,18 @@ function Thing() {
 
 export default function App() {
   return (
-    <Canvas
-      key={WebGLDeferredRenderer.uuid} // force re-creation of the renderer
-      shadows
-      gl={(canvas) => {
-        return new WebGLDeferredRenderer({
-          canvas,
-          alpha: true,
-          antialias: true,
-        });
-      }}
-    >
-      <fog attach="fog" args={[0xffffff, 10, 90]} />
+    <>
+      <Canvas
+        key={WebGLDeferredRenderer.uuid} // force re-creation of the renderer
+        gl={(props) => {
+          return new WebGLDeferredRenderer(props);
+        }}
+      >
+        <OrbitControls makeDefault target={[0, 2, 0]} />
+        <PerspectiveCamera position={[8, 2, 2]} makeDefault />
 
-      {/* <OrbitControls makeDefault target={[0, 2, 0]} />
-      <PerspectiveCamera position={[0, 2, 20]} makeDefault /> */}
-      <OrbitControls makeDefault target={[0, 2, 0]} />
-      <PerspectiveCamera position={[8, 2, 2]} makeDefault />
-
-      <Thing />
-    </Canvas>
+        <Thing />
+      </Canvas>
+    </>
   );
 }

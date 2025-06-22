@@ -36,13 +36,10 @@ export class WebGLDeferredRenderer extends THREE.WebGLRenderer {
     this._fsQuad.uResolution.set(w, h);
   }
 
-  setSize(width: number, height: number, updateStyle?: boolean): void {
-    super.setSize(width, height, updateStyle);
-
-    const w = this.domElement.clientWidth * window.devicePixelRatio;
-    const h = this.domElement.clientHeight * window.devicePixelRatio;
-    this._gBuffer.fbo.setSize(w, h);
-    this._fsQuad.uResolution.set(w, h);
+  resize(width: number, height: number): void {
+    this._gBuffer.fbo.setSize(width, height);
+    this._fsQuad.uResolution.set(width, height);
+    this._fsQuad.update();
   }
 
   deferredRender(scene: THREE.Scene, camera: THREE.PerspectiveCamera) {
