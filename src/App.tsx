@@ -63,7 +63,7 @@ export default function App() {
         }}
       >
         <OrbitControls makeDefault target={[0, 2, 0]} />
-        <PerspectiveCamera position={[8, 2, 2]} makeDefault />
+        <PerspectiveCamera position={[2, 2, 0]} makeDefault />
 
         <Thing />
       </Canvas>
