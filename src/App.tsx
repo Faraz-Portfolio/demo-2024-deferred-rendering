@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import { Mesh } from "three";
 import { WebGLDeferredRenderer } from "./WebGLDeferredRenderer";
 
+const baseUrl = import.meta.env.BASE_URL;
+
 function Thing() {
   const gl = useThree((state) => state.gl as WebGLDeferredRenderer);
   const size = useThree((state) => state.size);
@@ -24,7 +26,7 @@ function Thing() {
     },
   });
 
-  const { scene } = useGLTF("/demo-2024-deferred-rendering/sponza.glb");
+  const { scene } = useGLTF(baseUrl + "sponza.glb");
 
   useEffect(
     () => () => {
@@ -42,7 +44,7 @@ function Thing() {
         }
       });
     },
-    [scene]
+    [scene],
   );
 
   return (
